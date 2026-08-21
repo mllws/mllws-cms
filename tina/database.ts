@@ -46,6 +46,12 @@ const token = env("GITHUB_PERSONAL_ACCESS_TOKEN");
 const redisUrl = env("KV_REST_API_URL") || env("UPSTASH_REDIS_REST_URL");
 const redisToken = env("KV_REST_API_TOKEN") || env("UPSTASH_REDIS_REST_TOKEN");
 
+// Tina only seeds the detached Users collection when this Redis namespace is
+// empty. Local `dev:prod` already wrote a user into `main`, so production
+// kept that hash and rejected ChangeMeNow!. Bump TINA_INDEX_NAMESPACE to
+// re-seed from mllws-blog.
+const namespace = env("TINA_INDEX_NAMESPACE") || `${branch}-v2`;
+
 if (!isLocal && (!token || !redisUrl || !redisToken)) {
   const missing = [
     !token && "GITHUB_PERSONAL_ACCESS_TOKEN",
@@ -75,5 +81,5 @@ export default isLocal
         },
         debug: process.env.DEBUG === "true" || false,
       }),
-      namespace: branch,
+      namespace,
     });

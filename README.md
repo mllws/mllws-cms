@@ -36,9 +36,11 @@ Protection.
 
 ## Auth
 
-Tina Auth.js username/password. First production user belongs in **private**
-`mllws-blog` at `content/users/index.json` (see `content/users/index.example.json`).
-Password hashes after first login live in Redis, not git.
+Tina Auth.js username/password. First production user is seeded from private
+`mllws-blog` `content/users/index.json` into Redis **only when that Redis
+namespace is empty**. After that, password hashes live in Redis, not Git.
+If login rejects the seed password, bump `TINA_INDEX_NAMESPACE` (or flush
+that Redis database) and redeploy.
 
 Vercel Deployment Protection (password or SSO) is a second gate in front of the
 whole deploy. Use it once the CMS URL is on the internet.
