@@ -36,12 +36,16 @@ Protection.
 
 ## Auth
 
-Tina Auth.js username/password. Users are stored in Redis (`_appData`), not
-re-read from Git on every deploy. The GitHub seed in `mllws-blog` is used only
-when that Redis key prefix is empty. Local `dev:prod` uses the same Upstash
-database, so it can poison production login. Bump `TINA_INDEX_NAMESPACE` on
-the RedisLevel adapter (or use a separate Upstash database for the laptop)
-to re-seed `admin` from GitHub.
+Tina Auth.js username/password. Users are hashed into Redis (`_appData`)
+during `tinacms build`. That build indexes **files on disk**, not GitHub, so
+the Vercel build clones private `mllws-blog` first (see
+`scripts/fetch-blog-content.js`). The empty `content/users/index.json` in this
+public repo is only a placeholder.
+
+After the first index, Redis keeps the user hashes even if Git changes. Local
+`dev:prod` uses the same Upstash database and can poison production login.
+Bump `TINA_INDEX_NAMESPACE` (or use a separate Upstash database on the laptop)
+to re-seed `admin` from `mllws-blog`.
 
 Vercel Deployment Protection (password or SSO) is a second gate in front of the
 whole deploy. Use it once the CMS URL is on the internet.
@@ -108,7 +112,8 @@ npm run dev:prod
 
 Put the seed user on **`mllws-blog` `main`** (`content/users/index.json`) before
 the first production login. This public repo’s `content/users/index.json` is
-empty on purpose.
+empty on purpose. The Vercel build clones `mllws-blog` so Tina indexes the
+private seed, not that empty placeholder.
 
 Saving in Tina still commits to private `mllws-blog`, which should already
 trigger the website Deploy Hook.

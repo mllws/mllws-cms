@@ -48,9 +48,9 @@ const redisToken = env("KV_REST_API_TOKEN") || env("UPSTASH_REDIS_REST_TOKEN");
 
 // Users are detached and stored in Redis `_appData`, which is NOT under
 // createDatabase's content namespace. RedisLevel `namespace` prefixes the
-// actual Redis hash (`level:h` by default), so bumping this is what reseeds
-// the admin user from mllws-blog.
-const redisNamespace = env("TINA_INDEX_NAMESPACE") || "mllws-cms-v2";
+// actual Redis hash (`level:h` by default). Bump this after a bad index
+// (empty public users file) so the next build can hash mllws-blog's seed.
+const redisNamespace = env("TINA_INDEX_NAMESPACE") || "mllws-cms-v3";
 
 if (!isLocal && (!token || !redisUrl || !redisToken)) {
   const missing = [

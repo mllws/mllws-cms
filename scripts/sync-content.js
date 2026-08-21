@@ -3,8 +3,8 @@
  * Copies MDX collections from the sibling mllws-blog repo into this CMS
  * working tree so `TINA_PUBLIC_IS_LOCAL=true` can edit files on disk.
  *
- * Production (`npm run dev:prod` / Vercel) talks to GitHub directly and
- * does not need this copy — saves go to mllws-blog via the GitHub API.
+ * Vercel uses `scripts/fetch-blog-content.js` instead (clone via PAT).
+ * Saves in `dev:prod` still go to mllws-blog via the GitHub API.
  */
 
 const fs = require("node:fs");
@@ -44,11 +44,9 @@ for (const name of COLLECTIONS) {
 const usersSrc = path.join(blogRoot, "content", "users");
 const usersDest = path.join(destRoot, "users");
 if (fs.existsSync(usersSrc) && fs.statSync(usersSrc).isDirectory()) {
-  const seed = path.join(usersDest, "index.json");
-  if (!fs.existsSync(seed)) {
-    fs.cpSync(usersSrc, usersDest, { recursive: true });
-    console.log("[sync-content] Copied content/users/");
-  }
+  fs.rmSync(usersDest, { recursive: true, force: true });
+  fs.cpSync(usersSrc, usersDest, { recursive: true });
+  console.log("[sync-content] Copied content/users/");
 }
 
 if (copied === 0) {

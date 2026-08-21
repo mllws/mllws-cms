@@ -17,8 +17,15 @@ if (process.env.NEXTAUTH_URL?.trim()) {
   );
 }
 
-const isLocal = process.env.TINA_PUBLIC_IS_LOCAL === "true";
-// Full index so content/users from mllws-blog is hashed into Redis on each deploy.
+const fetch = spawnSync("node", ["scripts/fetch-blog-content.js"], {
+  stdio: "inherit",
+  env: process.env,
+});
+if (fetch.status) {
+  process.exit(fetch.status === null ? 1 : fetch.status);
+}
+
+// Full index so copied mllws-blog users are hashed into Redis on each deploy.
 const args = ["build"];
 
 const result = spawnSync("tinacms", args, {
