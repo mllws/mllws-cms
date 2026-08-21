@@ -25,6 +25,18 @@ async function tinaHandler() {
 
 async function handle(request) {
   try {
+    if (!process.env.NEXTAUTH_URL?.trim() && process.env.VERCEL_URL) {
+      process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL}/api/tina/auth`;
+    }
+    if (process.env.TINA_PUBLIC_IS_LOCAL !== "true" && !process.env.NEXTAUTH_SECRET?.trim()) {
+      return NextResponse.json(
+        {
+          error:
+            "NEXTAUTH_SECRET is not set on this Vercel project. Add it under Settings → Environment Variables, then redeploy. It is a cookie-signing key, not the Tina login password.",
+        },
+        { status: 500 }
+      );
+    }
     const handler = await tinaHandler();
     return await runNodeApiHandler(handler, request);
   } catch (error) {
