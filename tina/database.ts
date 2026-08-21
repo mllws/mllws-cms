@@ -46,11 +46,11 @@ const token = env("GITHUB_PERSONAL_ACCESS_TOKEN");
 const redisUrl = env("KV_REST_API_URL") || env("UPSTASH_REDIS_REST_URL");
 const redisToken = env("KV_REST_API_TOKEN") || env("UPSTASH_REDIS_REST_TOKEN");
 
-// Tina only seeds the detached Users collection when this Redis namespace is
-// empty. Local `dev:prod` already wrote a user into `main`, so production
-// kept that hash and rejected ChangeMeNow!. Bump TINA_INDEX_NAMESPACE to
-// re-seed from mllws-blog.
-const namespace = env("TINA_INDEX_NAMESPACE") || `${branch}-v2`;
+// Users are detached and stored in Redis `_appData`, which is NOT under
+// createDatabase's content namespace. RedisLevel `namespace` prefixes the
+// actual Redis hash (`level:h` by default), so bumping this is what reseeds
+// the admin user from mllws-blog.
+const redisNamespace = env("TINA_INDEX_NAMESPACE") || "mllws-cms-v2";
 
 if (!isLocal && (!token || !redisUrl || !redisToken)) {
   const missing = [
@@ -79,7 +79,8 @@ export default isLocal
           url: redisUrl as string,
           token: redisToken as string,
         },
+        namespace: redisNamespace,
         debug: process.env.DEBUG === "true" || false,
       }),
-      namespace,
+      namespace: branch,
     });

@@ -36,11 +36,12 @@ Protection.
 
 ## Auth
 
-Tina Auth.js username/password. First production user is seeded from private
-`mllws-blog` `content/users/index.json` into Redis **only when that Redis
-namespace is empty**. After that, password hashes live in Redis, not Git.
-If login rejects the seed password, bump `TINA_INDEX_NAMESPACE` (or flush
-that Redis database) and redeploy.
+Tina Auth.js username/password. Users are stored in Redis (`_appData`), not
+re-read from Git on every deploy. The GitHub seed in `mllws-blog` is used only
+when that Redis key prefix is empty. Local `dev:prod` uses the same Upstash
+database, so it can poison production login. Bump `TINA_INDEX_NAMESPACE` on
+the RedisLevel adapter (or use a separate Upstash database for the laptop)
+to re-seed `admin` from GitHub.
 
 Vercel Deployment Protection (password or SSO) is a second gate in front of the
 whole deploy. Use it once the CMS URL is on the internet.
