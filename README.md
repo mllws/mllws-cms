@@ -94,7 +94,7 @@ npm run dev:prod
    | `GITHUB_REPO` | `mllws-blog` |
    | `GITHUB_BRANCH` | `main` |
    | `NEXTAUTH_SECRET` | `openssl rand -base64 32` (new, not the laptop one) |
-   | `NEXTAUTH_URL` | `https://<this-project>.vercel.app` (update if you add a domain) |
+   | `NEXTAUTH_URL` | `https://<this-project>.vercel.app/api/tina/auth` |
    | `UPSTASH_REDIS_REST_URL` | from Upstash |
    | `UPSTASH_REDIS_REST_TOKEN` | from Upstash |
    | `BLOB_READ_WRITE_TOKEN` | from the Blob store |

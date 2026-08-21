@@ -3,6 +3,6 @@
 const url = process.env.NEXTAUTH_URL?.trim();
 if (!url) {
   process.env.NEXTAUTH_URL = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3003";
+    ? `https://${process.env.VERCEL_URL}/api/tina/auth`
+    : "http://localhost:3003/api/tina/auth";
 }

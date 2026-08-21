@@ -5,8 +5,8 @@ const { spawnSync } = require("node:child_process");
 // before the Tina CLI loads config.ts.
 if (!process.env.NEXTAUTH_URL?.trim()) {
   process.env.NEXTAUTH_URL = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3003";
+    ? `https://${process.env.VERCEL_URL}/api/tina/auth`
+    : "http://localhost:3003/api/tina/auth";
 }
 
 const isLocal = process.env.TINA_PUBLIC_IS_LOCAL === "true";
