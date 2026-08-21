@@ -1,0 +1,36 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+tsconfig.tsbuildinfo
+
+# production
+/build
+/public/admin
+
+# tina generated at build/dev time
+/tina/__generated__/
+
+# fetched MDX from mllws-blog — never commit drafts into this repo
+/content/posts/
+/content/events/
+/content/stories/
+/content/galleries/
+
+# misc
+.DS_Store
+.env
+.env.local
+.idea
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

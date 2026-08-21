@@ -1,0 +1,40 @@
+{
+  "name": "mllws-cms",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hosted TinaCMS editor for the private mllws-blog MDX repo.",
+  "scripts": {
+    "predev": "node scripts/sync-content.js",
+    "dev": "TINA_PUBLIC_IS_LOCAL=true tinacms dev -c \"next dev --port 3003\"",
+    "dev:prod": "TINA_PUBLIC_IS_LOCAL=false tinacms dev -c \"next dev --port 3003\"",
+    "build": "node scripts/tina-build.js && next build",
+    "start": "next start --port 3003",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@tinacms/datalayer": "^2.0.27",
+    "@vercel/blob": "^2.0.0",
+    "next": "^16.2.10",
+    "next-auth": "^4.24.14",
+    "react": "^19.2.4",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
+    "react-dom": "^19.2.4",
+    "tinacms": "^3.10.0",
+    "tinacms-authjs": "^24.0.0",
+    "tinacms-gitprovider-github": "^4.1.14",
+    "upstash-redis-level": "^1.1.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.11",
+    "@tinacms/cli": "^2.5.3",
+    "@types/node": "^24.5.2",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "eslint": "^9.36.0",
+    "eslint-config-next": "^16.2.10",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.11",
+    "typescript": "^5.9.2"
+  }
+}
