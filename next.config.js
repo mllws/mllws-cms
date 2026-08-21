@@ -12,10 +12,6 @@ const nextConfig = {
         source: "/admin",
         destination: "/admin/index.html",
       },
-      {
-        source: "/api/auth/:path*",
-        destination: "/api/tina/auth/:path*",
-      },
     ];
   },
 };
