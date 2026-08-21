@@ -1,13 +1,3 @@
 {
-  "users": [
-    {
-      "name": "MLLWS Admin",
-      "email": "admin@motherlanguagelovers.com",
-      "username": "admin",
-      "password": {
-        "value": "ChangeMeNow!",
-        "passwordChangeRequired": true
-      }
-    }
-  ]
+  "users": []
 }

@@ -1,33 +1,47 @@
 # mllws-cms
 
-Private, self-hosted [TinaCMS](https://tina.io) editor for MLLWS content.
+Self-hosted [TinaCMS](https://tina.io) editor for MLLWS content.
 
-This app is **not** the public website. It writes MDX into the private
-[`mllws-blog`](https://github.com/mllws/mllws-blog) repo. The public site still
-clones that repo at build time.
+This GitHub repo can be **public** (needed for Vercel Hobby). It is still **not**
+the public website, and it must **not** contain posts, drafts, or secrets.
 
-## Auth: Auth.js, not Vercel login
+Content lives in the **private** [`mllws-blog`](https://github.com/mllws/mllws-blog)
+repo. The public website clones that repo at build time. This app only writes
+there through a GitHub token stored in Vercel, never in git.
 
-Use **Tina’s Auth.js username/password**. That is the right fit for board
-members and volunteers who should not need GitHub or Vercel accounts.
+## Where secrets live
 
-Vercel does **not** provide a general-purpose auth server for your app’s users.
-What Vercel does offer:
-
-| Vercel feature | Use here? |
+| Place | What goes there |
 |---|---|
-| **Deployment Protection** (site password / SSO) | Optional second gate in front of the whole CMS deploy |
-| **Sign in with Vercel** | No — that authenticates Vercel team members, not content editors |
-| **Clerk / Auth0 (Marketplace)** | Possible later; extra vendor, not wired into Tina’s user collection |
+| **Vercel → this CMS project → Settings → Environment Variables** | Production/preview secrets (the real store) |
+| **`mllws-cms/.env.local`** | Local copies. Gitignored. Never commit. |
+| **Password manager** | Backup of the GitHub PAT and `NEXTAUTH_SECRET` |
+| **This GitHub repo** | Nothing secret. `.env.example` has empty names only. |
+| **Public website Vercel project** | Only the read-only `BLOG_CONTENT_TOKEN`. Never the CMS write PAT. |
 
-After first login, Tina will require changing the seed password. Add more
-editors under **Users** in the admin sidebar. Password hashes live in Redis, not
-in Git.
+Copy `.env.example` to `.env.local` for laptop use. On Vercel, add the same
+**names** with real values. Do not paste tokens into README, issues, or git.
 
-Seed user (change immediately):
+## Public repo vs private content
 
-- username: `admin`
-- password: `ChangeMeNow!`
+| Repo | Visibility | Why |
+|---|---|---|
+| `mllws-cms` (this app) | Public | Vercel Hobby cannot deploy private GitHub repos |
+| `mllws-blog` | **Private** | MDX, drafts, CMS users |
+| `mllws-website` | Public | The nonprofit site |
+
+A public CMS repo exposes editor **code**, not unpublished articles. `/admin`
+on the live CMS URL must still be behind Tina login **and** Vercel Deployment
+Protection.
+
+## Auth
+
+Tina Auth.js username/password. First production user belongs in **private**
+`mllws-blog` at `content/users/index.json` (see `content/users/index.example.json`).
+Password hashes after first login live in Redis, not git.
+
+Vercel Deployment Protection (password or SSO) is a second gate in front of the
+whole deploy. Use it once the CMS URL is on the internet.
 
 ## What talks to what
 
@@ -40,8 +54,8 @@ Editor  →  this CMS (/admin)
                      └─ Deploy Hook rebuilds mllws-website
 ```
 
-Images are stored as HTTPS URLs in MDX (Blob or existing
-`motherlanguagelovers.com` files). Do not commit photo binaries to Git.
+Images are HTTPS URLs in MDX (Blob or existing `motherlanguagelovers.com` files).
+Do not commit photo binaries to Git.
 
 ## Local development
 
@@ -49,90 +63,64 @@ Needs Node 20+ and the sibling `mllws-blog` folder.
 
 ```bash
 cp .env.example .env.local
-# set NEXTAUTH_SECRET even for local: openssl rand -base64 32
+# set NEXTAUTH_SECRET: openssl rand -base64 32
 npm install
 npm run dev
 ```
 
 Then open http://localhost:3003/admin
 
-`npm run dev` sets `TINA_PUBLIC_IS_LOCAL=true`:
+`npm run dev` sets `TINA_PUBLIC_IS_LOCAL=true` (no login, disk saves).
 
-- no login
-- saves write to the copied `content/` files on disk
-- `scripts/sync-content.js` copies posts/events/stories/galleries from
-  `../mllws-blog` on each `predev`
-
-To test GitHub + Auth.js + Redis + Blob the way production works:
+GitHub + Auth.js + Redis + Blob:
 
 ```bash
-# in .env.local:
-# TINA_PUBLIC_IS_LOCAL=false
-# GITHUB_PERSONAL_ACCESS_TOKEN=  (write on mllws-blog only)
-# KV_REST_API_URL= / KV_REST_API_TOKEN=   (or UPSTASH_REDIS_REST_*)
-# BLOB_READ_WRITE_TOKEN=
-# NEXTAUTH_SECRET=
-# NEXTAUTH_URL=http://localhost:3003
 npm run dev:prod
 ```
 
-Local Blob `onUploadCompleted` callbacks do not fire without a public tunnel.
-Uploads through this handler use server `put()`, so local uploads work as long
-as `BLOB_READ_WRITE_TOKEN` is set.
+## Vercel deploy (Hobby, public GitHub)
 
-## GitHub token
+1. GitHub: set `mllws/mllws-cms` to **Public**. Keep `mllws-blog` **Private**.
+2. Vercel: **Add New → Project** → import `mllws/mllws-cms` as its **own**
+   project. Do not add it to the website project.
+3. Framework: Next.js. Build command can stay `npm run build`.
+4. Environment variables for Production **and** Preview:
 
-Create a **fine-grained** PAT (or GitHub App) with **Contents: Read and write**
-on `mllws/mllws-blog` only. This is a different secret from the website’s
-read-only `BLOG_CONTENT_TOKEN`.
-
-If `mllws-blog` `main` requires pull requests, Tina saves will fail unless this
-token can bypass branch protection. For a small editor team, allow direct pushes
-to `main` on the content repo.
-
-## Vercel deploy
-
-1. Create a **private** GitHub repo `mllws/mllws-cms` and push this project.
-2. Import it as a new Vercel project (Hobby is enough).
-3. Create an Upstash Redis database (free tier is enough). Prefer Vercel
-   Marketplace → Upstash, or paste `KV_REST_API_URL` / `KV_REST_API_TOKEN`.
-4. Create a **public** Vercel Blob store. Attach the read-write token to **this**
-   project. The public website already allowlists
-   `*.public.blob.vercel-storage.com`.
-5. Set environment variables (Production + Preview):
-
-   | Name | Notes |
+   | Name | Value |
    |---|---|
    | `TINA_PUBLIC_IS_LOCAL` | `false` |
-   | `GITHUB_PERSONAL_ACCESS_TOKEN` | write token for `mllws-blog` |
+   | `GITHUB_PERSONAL_ACCESS_TOKEN` | write PAT, `mllws-blog` only |
    | `GITHUB_OWNER` | `mllws` |
    | `GITHUB_REPO` | `mllws-blog` |
    | `GITHUB_BRANCH` | `main` |
-   | `NEXTAUTH_SECRET` | `openssl rand -base64 32` |
-   | `NEXTAUTH_URL` | `https://<your-cms-domain>` |
-   | `KV_REST_API_URL` / `KV_REST_API_TOKEN` | Upstash |
-   | `BLOB_READ_WRITE_TOKEN` | Blob store |
+   | `NEXTAUTH_SECRET` | `openssl rand -base64 32` (new, not the laptop one) |
+   | `NEXTAUTH_URL` | `https://<this-project>.vercel.app` (update if you add a domain) |
+   | `UPSTASH_REDIS_REST_URL` | from Upstash |
+   | `UPSTASH_REDIS_REST_TOKEN` | from Upstash |
+   | `BLOB_READ_WRITE_TOKEN` | from the Blob store |
 
-6. Optional: custom domain `cms.motherlanguagelovers.com` plus Vercel
-   Deployment Protection.
-7. Keep this Vercel project **private**. Do not put the write PAT on the public
-   website project.
+5. Project Settings → Deployment Protection → on.
+6. Optional domain: `cms.motherlanguagelovers.com`. Then set `NEXTAUTH_URL` to
+   that HTTPS origin and redeploy.
 
-A push to `mllws-blog` should already trigger the website Deploy Hook. Saving in
-Tina commits there, so the public site updates without touching this CMS repo.
+Put the seed user on **`mllws-blog` `main`** (`content/users/index.json`) before
+the first production login. This public repo’s `content/users/index.json` is
+empty on purpose.
 
-## Draft vs publish
+Saving in Tina still commits to private `mllws-blog`, which should already
+trigger the website Deploy Hook.
 
-Leave **Draft** on until the piece should go live. Drafts can live on `main` in
-the private content repo; the public site hides them. Turning Draft off and
-saving publishes on the next website rebuild (~1–2 minutes).
+## GitHub token
+
+Fine-grained PAT: **Contents: Read and write** on `mllws/mllws-blog` only. Not
+the same as the website’s read-only `BLOG_CONTENT_TOKEN`.
 
 ## Collections
 
-| Admin label | Git path |
+| Admin label | Git path (in private `mllws-blog`) |
 |---|---|
 | Blog posts | `content/posts/*.mdx` |
 | Events | `content/events/*.mdx` |
 | Stories | `content/stories/*.mdx` |
 | Photo galleries | `content/galleries/*.mdx` |
-| Users | `content/users/index.json` (seed only; passwords are not committed after change) |
+| Users | `content/users/index.json` |
