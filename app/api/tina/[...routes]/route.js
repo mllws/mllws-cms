@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { TinaNodeBackend, LocalBackendAuthProvider } from "@tinacms/datalayer";
 import { TinaAuthJSOptions, AuthJsBackendAuthProvider } from "tinacms-authjs";
-import { runNodeApiHandler } from "../../../lib/run-node-api";
+import { runNodeApiHandler } from "../../../../lib/run-node-api";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 async function tinaHandler() {
-  const databaseClient = (await import("../../../tina/__generated__/databaseClient"))
+  const databaseClient = (await import("../../../../tina/__generated__/databaseClient"))
     .default;
   const isLocal = process.env.TINA_PUBLIC_IS_LOCAL === "true";
   return TinaNodeBackend({
