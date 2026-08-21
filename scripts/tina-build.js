@@ -1,12 +1,20 @@
 #!/usr/bin/env node
 const { spawnSync } = require("node:child_process");
 
-// next-auth throws on NEXTAUTH_URL="" (blank Vercel env). Fill a valid URL
-// before the Tina CLI loads config.ts.
-if (!process.env.NEXTAUTH_URL?.trim()) {
-  process.env.NEXTAUTH_URL = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}/api/tina/auth`
-    : "http://localhost:3003/api/tina/auth";
+function withTinaAuthPath(raw) {
+  const trimmed = raw.replace(/\/$/, "");
+  if (trimmed.endsWith("/api/tina/auth")) return trimmed;
+  return `${trimmed}/api/tina/auth`;
+}
+
+if (process.env.NEXTAUTH_URL?.trim()) {
+  process.env.NEXTAUTH_URL = withTinaAuthPath(process.env.NEXTAUTH_URL.trim());
+} else {
+  process.env.NEXTAUTH_URL = withTinaAuthPath(
+    process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3003"
+  );
 }
 
 const isLocal = process.env.TINA_PUBLIC_IS_LOCAL === "true";
